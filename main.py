@@ -39,8 +39,8 @@ class VerticalLinearLayout:
     def draw(self,screen):
         current_y = self.y
         for element in self.elements:
-            if(current_y + element.height > self.y + self.height):
-                printError("Element exceeds layout height")
+            if(current_y + element.height > self.y + self.height or element.width > self.width):
+                printError("Element exceeds layout bounds")
             element.draw(screen,self.x,current_y)
             current_y += element.height
 
