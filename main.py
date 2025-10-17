@@ -1,6 +1,7 @@
 import pygame
 import sys
 from random import randint
+from enum import Enum
 
 def printError(text):
     raise Exception(text)
@@ -30,9 +31,35 @@ class UIElement:
         screen.blit(text, (x + 5, y + 5))
 
 
-class Layout(UIElement):
+class UILabel(UIElement):
+    def __init__(self,width, height, text, fontType = None, fontSize=32, id=0):
+        super().__init__(width,height,id)
+        self.text = text
+        self.font = pygame.font.Font(fontType, fontSize)
+
+    def draw(self,screen,x,y):
+        text_surface = self.font.render(self.text, True, (0, 0, 0))
+        screen.blit(text_surface, (x, y))
+
+class UIButton(UIElement):
+    def __init__(self,width, height, image, hoverImage, id=0):
+        super().__init__(width,height,id)
+        self.image = pygame.image.load(image)
+        self.image = pygame.transform.scale(self.image, (width, height))
+        self.hoverImage = pygame.image.load(hoverImage)
+        self.hoverImage = pygame.transform.scale(self.hoverImage, (width, height))
+
+    def draw(self,screen,x,y):
+        mousePos = pygame.mouse.get_pos()
+        if x <= mousePos[0] <= x + self.width and y <= mousePos[1] <= y + self.height:
+            screen.blit(self.hoverImage, (x, y))
+        else:
+            screen.blit(self.image, (x, y))
+
+
+class UILayout(UIElement):
     def __init__(self,width, height,id=0):
-        super().__init__(width,height)
+        super().__init__(width,height,id)
         self.elements = []
 
     def addElement(self,element):
@@ -41,7 +68,7 @@ class Layout(UIElement):
         self.elements.append(element)
 
 
-class VerticalLinearLayout(Layout):
+class UIVerticalLinearLayout(UILayout):
 
     def __init__(self,width, height,id=0):
         super().__init__(width,height,id)
@@ -55,7 +82,7 @@ class VerticalLinearLayout(Layout):
             current_y += element.height
 
 
-class HorizantalLinearLayout(Layout):
+class UIHorizontalLinearLayout(UILayout):
 
     def __init__(self,width, height,id=0):
         super().__init__(width,height,id)
@@ -68,11 +95,23 @@ class HorizantalLinearLayout(Layout):
             element.draw(screen,current_x,y)
             current_x += element.width
 
-def checkQuitEvent():
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
+
+def GetMainMenuLayout():
+    layout = UIVerticalLinearLayout(900,900)
+    layout.addElement(UIButton(150, 50, "./assets/buttons/Rect/PlayIcon/Default.png", "./assets/buttons/Rect/PlayIcon/Hover.png", 1))
+    layout.addElement(UILabel(200, 50, "Reimagined Tic Tac Toe", "./assets/Fonts/ethnocentric.ttf", 32, 2))
+    layout.addElement(UIButton(50, 50, "./assets/Exit.png", "./assets/Exit.png", 1))
+    return layout
+
+def GetInGameLayout():
+    layout = UIVerticalLinearLayout(300,300)
+    layout.addElement(UIButton(100, 50, "./assets/buttons/Rect/PlayIcon/Default.png", "./assets/buttons/Rect/PlayIcon/Hover.png", 2))
+    return layout
+
+class GameState(Enum):
+    MAIN_MENU = 1
+    IN_GAME = 2
+
 
 pygame.init()
 
@@ -80,52 +119,26 @@ SCREEN_WIDTH, SCREEN_HEIGHT = 900, 900
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Reimagined Tic Tac Toe")
 
+game_state = GameState.MAIN_MENU
 
 clock = pygame.time.Clock()
 
 
 while True:
-
-    checkQuitEvent()
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
     screen.fill((255, 255, 255))
     
-    # board = ticTacToeBoard()
-    # board.drawBoard(50, 50)
-    # board.drawBoard(250, 50)
-    # board.drawBoard(450, 50)
-    # board.drawBoard(50, 250)
-    # board.drawBoard(250, 250)
-    # board.drawBoard(450, 250)
-    # board.drawBoard(50, 450)
-    # board.drawBoard(250, 450)
-    # board.drawBoard(450, 450)
+    if game_state == GameState.MAIN_MENU:
+        layout = GetMainMenuLayout()
+    elif game_state == GameState.IN_GAME:
+        layout = GetInGameLayout()
+    else:
+        printError("Invalid game state")
 
-
-
-
-    # mainLayout = VerticalLinearLayout(SCREEN_WIDTH, SCREEN_HEIGHT)
-    # header = UIElement(SCREEN_WIDTH,50,1)
-    # mainLayout.addElement(header)
-    # midSection = HorizantalLinearLayout(SCREEN_WIDTH, 800)
-    # ele1 = UIElement(200,800,4)
-    # ele2 = UIElement(200,800,5)
-    # ele3 = UIElement(200,800,6)
-    # ele4 = UIElement(200,800,7)
-    # ele5 = UIElement(200,800,8)
-    # midSection.addElement(ele1)
-    # midSection.addElement(ele2)
-    # midSection.addElement(ele3)
-    # midSection.addElement(ele4)
-    # midSection.addElement(ele5)
-    # mainLayout.addElement(midSection)
-    # footer = UIElement(SCREEN_WIDTH,50,3)
-    # mainLayout.addElement(footer)
-    # mainLayout.draw(screen,0,0)
-
-
-
-    mainLayout = Layout(400, 400)
-    mainLayout.draw(screen,0,0)
+    layout.draw(screen,0,0)
 
     pygame.display.flip()
 
