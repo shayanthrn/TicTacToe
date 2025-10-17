@@ -26,7 +26,18 @@ class UIElement:
         self.height = height
         self.xOffset = xOffset
         self.yOffset = yOffset
+        self.x = None # will be set during drawing
+        self.y = None # will be set during drawing
+
     def draw(self,screen,x,y):
+        self.x = x + self.xOffset
+        self.y = y + self.yOffset
+        self._draw(screen)
+        
+    def _draw(self,screen):
+        pass
+
+    def handleEvent(self,event):
         pass
 
 class UIImage(UIElement):
@@ -35,8 +46,8 @@ class UIImage(UIElement):
         self.image = pygame.image.load(imagePath)
         self.image = pygame.transform.scale(self.image, (width, height))
 
-    def draw(self,screen,x,y):
-        screen.blit(self.image, (x + self.xOffset, y + self.yOffset))
+    def _draw(self,screen):
+        screen.blit(self.image, (self.x, self.y))
 
 class UILabel(UIElement):
     def __init__(self,width, height, text, fontType = None, fontSize=32, xOffset=0, yOffset=0, id=0):
@@ -44,9 +55,10 @@ class UILabel(UIElement):
         self.text = text
         self.font = pygame.font.Font(fontType, fontSize)
 
-    def draw(self,screen,x,y):
+    def _draw(self,screen):
         text_surface = self.font.render(self.text, True, (0, 0, 0))
-        screen.blit(text_surface, (x + self.xOffset, y + self.yOffset))
+        screen.blit(text_surface, (self.x, self.y))
+        
 
 class UIButton(UIElement):
     def __init__(self,width, height, image, hoverImage, xOffset=0, yOffset=0, id=0):
@@ -56,12 +68,12 @@ class UIButton(UIElement):
         self.hoverImage = pygame.image.load(hoverImage)
         self.hoverImage = pygame.transform.scale(self.hoverImage, (width, height))
 
-    def draw(self,screen,x,y):
+    def _draw(self,screen):
         mousePos = pygame.mouse.get_pos()
-        if x + self.xOffset <= mousePos[0] <= x + self.width + self.xOffset and y + self.yOffset <= mousePos[1] <= y + self.height + self.yOffset:
-            screen.blit(self.hoverImage, (x + self.xOffset, y + self.yOffset))
+        if self.x <= mousePos[0] <= self.x + self.width and self.y <= mousePos[1] <= self.y + self.height:
+            screen.blit(self.hoverImage, (self.x, self.y))
         else:
-            screen.blit(self.image, (x + self.xOffset, y + self.yOffset))
+            screen.blit(self.image, (self.x, self.y))
 
 
 class UILayout(UIElement):
@@ -74,17 +86,21 @@ class UILayout(UIElement):
             printError("Element exceeds layout bounds")
         self.elements.append(element)
 
+    def handleEvent(self,event):
+        for element in self.elements:
+            element.handleEvent(event)
+
 
 class UIVerticalLinearLayout(UILayout):
     def __init__(self,width, height,xOffset=0,yOffset=0,id=0):
         super().__init__(width,height,xOffset,yOffset,id)
 
-    def draw(self,screen,x,y):
-        current_y = y
+    def _draw(self,screen):
+        current_y = self.y
         for element in self.elements:
-            if(current_y + element.height > y + self.height or element.width > self.width):
+            if(current_y + element.height > self.y + self.height or element.width > self.width):
                 printError("Element exceeds layout bounds")
-            element.draw(screen,x,current_y)
+            element.draw(screen,self.x,current_y)
             current_y += element.height + element.yOffset
 
 
@@ -92,12 +108,12 @@ class UIHorizontalLinearLayout(UILayout):
     def __init__(self,width, height,xOffset=0,yOffset=0,id=0):
         super().__init__(width,height,xOffset,yOffset,id)
 
-    def draw(self,screen,x,y):
-        current_x = x
+    def _draw(self,screen):
+        current_x = self.x
         for element in self.elements:
-            if(current_x + element.width > x + self.width or element.height > self.height):
+            if(current_x + element.width > self.x + self.width or element.height > self.height):
                 printError("Element exceeds layout bounds")
-            element.draw(screen,current_x,y)
+            element.draw(screen,current_x,self.y)
             current_x += element.width + element.xOffset
 
 def DescriptionLine(text, fontType = "./assets/Fonts/ethnocentric.ttf", fontSize=12):
@@ -173,24 +189,29 @@ game_state = GameState.WELCOME_AND_RULES
 
 clock = pygame.time.Clock()
 
-
+welcomeLayout = GetWelComeAndRulesLayout()
+mainMenuLayout = GetMainMenuLayout()
+inGameLayout = GetInGameLayout()
 while True:
+    screen.fill((255, 255, 254))
+
+    activeLayout = None
+
+    if game_state == GameState.WELCOME_AND_RULES:
+        activeLayout = welcomeLayout
+    elif game_state == GameState.MAIN_MENU:
+        activeLayout = mainMenuLayout
+    elif game_state == GameState.IN_GAME:
+        activeLayout = inGameLayout
+    else:
+        printError("Invalid game state")
+
+    activeLayout.draw(screen,0,0)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
-    screen.fill((255, 255, 254))
-    if game_state == GameState.WELCOME_AND_RULES:
-        layout = GetWelComeAndRulesLayout()
-    elif game_state == GameState.MAIN_MENU:
-        layout = GetMainMenuLayout()
-    elif game_state == GameState.IN_GAME:
-        layout = GetInGameLayout()
-    else:
-        printError("Invalid game state")
-
-    layout.draw(screen,0,0)
-
+        activeLayout.handleEvent(event)
     pygame.display.flip()
 
     clock.tick(60)
