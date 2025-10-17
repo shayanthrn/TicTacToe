@@ -92,8 +92,6 @@ class UILayout(UIElement):
         self.elements = []
 
     def addElement(self,element):
-        if(element.width > self.width or element.height > self.height):
-            printError("Element exceeds layout bounds")
         self.elements.append(element)
 
     def handleEvent(self,event, gameManager):
@@ -109,7 +107,7 @@ class UIVerticalLinearLayout(UILayout):
         current_y = self.y
         for element in self.elements:
             if(current_y + element.height > self.y + self.height or element.width > self.width):
-                printError("Element exceeds layout bounds")
+                printError(f"Element exceeds layout bounds, {current_y + element.height} > {self.y + self.height} or {element.width} > {self.width}")
             element.draw(screen,self.x,current_y)
             current_y += element.height + element.yOffset
 
@@ -122,7 +120,7 @@ class UIHorizontalLinearLayout(UILayout):
         current_x = self.x
         for element in self.elements:
             if(current_x + element.width > self.x + self.width or element.height > self.height):
-                printError("Element exceeds layout bounds")
+                printError(f"Element exceeds layout bounds, {current_x + element.width} > {self.x + self.width} or {element.height} > {self.height}")
             element.draw(screen,current_x,self.y)
             current_x += element.width + element.xOffset
 
@@ -161,19 +159,25 @@ def GetWelComeAndRulesLayout():
     layout.addElement(Header2Line("Hard:"))
     layout.addElement(DescriptionLine("Powered by a neural network trained with a genetic algorithm."))
     layout.addElement(DescriptionLine("If you manage to win against this AI, feel free to reject my job application. I’ll understand."))
-    layout.addElement(UIButton(200, 75, "./assets/buttons/Rect/OkText/Default.png", "./assets/buttons/Rect/OkText/Hover.png",welcomeMenuOnClick, SCREEN_WIDTH/2 - 100))
+    layout.addElement(UIButton(200, 75, "./assets/buttons/Rect/OkText/Default.png", "./assets/buttons/Rect/OkText/Hover.png",lambda gm: gm.setGameState(GameState.MAIN_MENU), SCREEN_WIDTH/2 - 100))
     return layout
 
-def welcomeMenuOnClick(gameManager):
-    gameManager.gameState = GameState.MAIN_MENU
 
 def GetMainMenuLayout():
     layout = UIVerticalLinearLayout(SCREEN_WIDTH,SCREEN_HEIGHT)
     layout.addElement(UILabel(HEADER_TEXT_WIDTH, HEADER_TEXT_HEIGHT, "Main Menu", "./assets/Fonts/ethnocentric.ttf", 48,SCREEN_WIDTH/2 - HEADER_TEXT_WIDTH/2))
     layout.addElement(UIImage(400,400,"./assets/images/board.png",SCREEN_WIDTH/2 - 200))
     layout.addElement(UILabel(DIFFICULTY_TEXT_WIDTH, DIFFICULTY_TEXT_HEIGHT, "Select The Difficulty", "./assets/Fonts/ethnocentric.ttf", 48,SCREEN_WIDTH/2 - DIFFICULTY_TEXT_WIDTH/2,50))
-    layout.addElement(UIButton(200, 75, "./assets/buttons/Rect/PlayIcon/Default.png", "./assets/buttons/Rect/PlayIcon/Hover.png", SCREEN_WIDTH/2 - 100))
-    
+    hlayoutButtons = UIHorizontalLinearLayout(SCREEN_WIDTH,70)
+    hlayoutButtons.addElement(UIButton(200, 70, "./assets/buttons/Rect/PlayIcon/Default.png", "./assets/buttons/Rect/PlayIcon/Hover.png", lambda gm: gm.setDifficultyAndStart(Difficulty.EASY),  70,0))
+    hlayoutButtons.addElement(UIButton(200, 70, "./assets/buttons/Rect/PlayIcon/Default.png", "./assets/buttons/Rect/PlayIcon/Hover.png", lambda gm: gm.setDifficultyAndStart(Difficulty.MEDIUM), 70,0))
+    hlayoutButtons.addElement(UIButton(200, 70, "./assets/buttons/Rect/PlayIcon/Default.png", "./assets/buttons/Rect/PlayIcon/Hover.png", lambda gm: gm.setDifficultyAndStart(Difficulty.HARD), 70,0))
+    layout.addElement(hlayoutButtons)
+    hlayoutLabels = UIHorizontalLinearLayout(SCREEN_WIDTH,30)
+    hlayoutLabels.addElement(UILabel(200, 30, "Easy", "./assets/Fonts/ethnocentric.ttf", 24, 70,30))
+    hlayoutLabels.addElement(UILabel(200, 30, "Medium", "./assets/Fonts/ethnocentric.ttf", 24, 70,30))
+    hlayoutLabels.addElement(UILabel(200, 30, "Hard", "./assets/Fonts/ethnocentric.ttf", 24, 70,30))
+    layout.addElement(hlayoutLabels)    
     return layout
 
 def GetInGameLayout():
@@ -186,12 +190,24 @@ class GameState(Enum):
     MAIN_MENU = 1
     IN_GAME = 2
 
+class Difficulty(Enum):
+    EASY = 0
+    MEDIUM = 1
+    HARD = 2
+
 class GameManager:
     def __init__(self):
         self.difficulty = None
         self.gameState = GameState.WELCOME_AND_RULES
+
     def getGameState(self):
         return self.gameState
+    
+    def setGameState(self, state):
+        self.gameState = state
+    
+    def setDifficultyAndStart(self, difficulty):
+        self.difficulty = difficulty
 
 pygame.init()
 
