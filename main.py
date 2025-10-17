@@ -37,7 +37,7 @@ class UIElement:
     def _draw(self,screen):
         pass
 
-    def handleEvent(self,event):
+    def handleEvent(self,event, gameManager):
         pass
 
 class UIImage(UIElement):
@@ -61,19 +61,29 @@ class UILabel(UIElement):
         
 
 class UIButton(UIElement):
-    def __init__(self,width, height, image, hoverImage, xOffset=0, yOffset=0, id=0):
+    def __init__(self,width, height, image, hoverImage, onClick, xOffset=0, yOffset=0, id=0):
         super().__init__(width,height,xOffset,yOffset,id)
         self.image = pygame.image.load(image)
         self.image = pygame.transform.scale(self.image, (width, height))
         self.hoverImage = pygame.image.load(hoverImage)
         self.hoverImage = pygame.transform.scale(self.hoverImage, (width, height))
+        self.onClick = onClick
 
     def _draw(self,screen):
         mousePos = pygame.mouse.get_pos()
-        if self.x <= mousePos[0] <= self.x + self.width and self.y <= mousePos[1] <= self.y + self.height:
+        rect = pygame.Rect(self.x, self.y, self.width, self.height)
+        if rect.collidepoint(mousePos):
             screen.blit(self.hoverImage, (self.x, self.y))
         else:
             screen.blit(self.image, (self.x, self.y))
+    
+    def handleEvent(self,event, gameManager):
+        mousePos = pygame.mouse.get_pos()
+        rect = pygame.Rect(self.x, self.y, self.width, self.height)
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if rect.collidepoint(mousePos):
+                if self.onClick:
+                    self.onClick(gameManager)
 
 
 class UILayout(UIElement):
@@ -86,9 +96,9 @@ class UILayout(UIElement):
             printError("Element exceeds layout bounds")
         self.elements.append(element)
 
-    def handleEvent(self,event):
+    def handleEvent(self,event, gameManager):
         for element in self.elements:
-            element.handleEvent(event)
+            element.handleEvent(event, gameManager)
 
 
 class UIVerticalLinearLayout(UILayout):
@@ -151,9 +161,11 @@ def GetWelComeAndRulesLayout():
     layout.addElement(Header2Line("Hard:"))
     layout.addElement(DescriptionLine("Powered by a neural network trained with a genetic algorithm."))
     layout.addElement(DescriptionLine("If you manage to win against this AI, feel free to reject my job application. I’ll understand."))
-    layout.addElement(UIButton(200, 75, "./assets/buttons/Rect/OkText/Default.png", "./assets/buttons/Rect/OkText/Hover.png", SCREEN_WIDTH/2 - 100))
+    layout.addElement(UIButton(200, 75, "./assets/buttons/Rect/OkText/Default.png", "./assets/buttons/Rect/OkText/Hover.png",welcomeMenuOnClick, SCREEN_WIDTH/2 - 100))
     return layout
 
+def welcomeMenuOnClick(gameManager):
+    gameManager.gameState = GameState.MAIN_MENU
 
 def GetMainMenuLayout():
     layout = UIVerticalLinearLayout(SCREEN_WIDTH,SCREEN_HEIGHT)
@@ -174,6 +186,12 @@ class GameState(Enum):
     MAIN_MENU = 1
     IN_GAME = 2
 
+class GameManager:
+    def __init__(self):
+        self.difficulty = None
+        self.gameState = GameState.WELCOME_AND_RULES
+    def getGameState(self):
+        return self.gameState
 
 pygame.init()
 
@@ -185,7 +203,7 @@ DIFFICULTY_TEXT_HEIGHT = 100
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Tic Tac Toe")
 
-game_state = GameState.WELCOME_AND_RULES
+gameManager = GameManager()
 
 clock = pygame.time.Clock()
 
@@ -197,11 +215,11 @@ while True:
 
     activeLayout = None
 
-    if game_state == GameState.WELCOME_AND_RULES:
+    if gameManager.getGameState() == GameState.WELCOME_AND_RULES:
         activeLayout = welcomeLayout
-    elif game_state == GameState.MAIN_MENU:
+    elif gameManager.getGameState() == GameState.MAIN_MENU:
         activeLayout = mainMenuLayout
-    elif game_state == GameState.IN_GAME:
+    elif gameManager.getGameState() == GameState.IN_GAME:
         activeLayout = inGameLayout
     else:
         printError("Invalid game state")
@@ -211,7 +229,7 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
-        activeLayout.handleEvent(event)
+        activeLayout.handleEvent(event, gameManager)
     pygame.display.flip()
 
     clock.tick(60)
