@@ -3,11 +3,6 @@ from gameManager import GameState, Difficulty, getGameManager
 from gameUIElements import UIBoard, DifficultyLabel, TurnLabel, MuteButton
 
 SCREEN_WIDTH, SCREEN_HEIGHT = 900, 900
-HEADER_TEXT_HEIGHT = 100
-HEADER_TEXT_WIDTH = 400
-DIFFICULTY_TEXT_WIDTH = 800
-DIFFICULTY_TEXT_HEIGHT = 100
-
 
 
 def DescriptionLine(text, fontType = "./assets/Fonts/ethnocentric.ttf", fontSize=12):
@@ -49,9 +44,9 @@ def GetWelComeAndRulesLayout():
 
 def GetMainMenuLayout():
     layout = UIVerticalLinearLayout(SCREEN_WIDTH,SCREEN_HEIGHT)
-    layout.addElement(UILabel(HEADER_TEXT_WIDTH, HEADER_TEXT_HEIGHT, "Main Menu", "./assets/Fonts/ethnocentric.ttf", 48,SCREEN_WIDTH/2 - HEADER_TEXT_WIDTH/2))
+    layout.addElement(UILabel(400, 100, "Main Menu", "./assets/Fonts/ethnocentric.ttf", 48,SCREEN_WIDTH/2 - 400/2))
     layout.addElement(UIImage(400,400,"./assets/images/board.png",SCREEN_WIDTH/2 - 200))
-    layout.addElement(UILabel(DIFFICULTY_TEXT_WIDTH, DIFFICULTY_TEXT_HEIGHT, "Select The Difficulty", "./assets/Fonts/ethnocentric.ttf", 48,SCREEN_WIDTH/2 - DIFFICULTY_TEXT_WIDTH/2,50))
+    layout.addElement(UILabel(800, 100, "Select The Difficulty", "./assets/Fonts/ethnocentric.ttf", 48,SCREEN_WIDTH/2 - 800/2,50))
     hlayoutButtons = UIHorizontalLinearLayout(SCREEN_WIDTH,70)
     hlayoutButtons.addElement(UIButton(200, 70, "./assets/buttons/Rect/PlayIcon/Default.png", "./assets/buttons/Rect/PlayIcon/Hover.png", lambda: getGameManager().setDifficultyAndStart(Difficulty.EASY),  70,0))
     hlayoutButtons.addElement(UIButton(200, 70, "./assets/buttons/Rect/PlayIcon/Default.png", "./assets/buttons/Rect/PlayIcon/Hover.png", lambda: getGameManager().setDifficultyAndStart(Difficulty.MEDIUM), 70,0))
@@ -89,7 +84,8 @@ def GetWinnerLayout():
     layout = UIVerticalLinearLayout(SCREEN_WIDTH,SCREEN_HEIGHT)
     headerlayout = UIHorizontalLinearLayout(SCREEN_WIDTH,50)
     headerlayout.addElement(UIButton(50, 50, "./assets/buttons/Square/Home/Default.png", "./assets/buttons/Square/Home/Hover.png", lambda: getGameManager().setGameState(GameState.MAIN_MENU)))
-    headerlayout.addElement(UILabel(800, 50, "Ultimate Tic Tac Toe!", "./assets/Fonts/ethnocentric.ttf", 36, 100))
+    headerlayout.addElement(UILabel(700, 50, "Ultimate Tic Tac Toe!", "./assets/Fonts/ethnocentric.ttf", 36, 100))
+    headerlayout.addElement(MuteButton(50,50))
     layout.addElement(headerlayout)
     mainLayout = UIVerticalLinearLayout(SCREEN_WIDTH, SCREEN_HEIGHT - 100)
     for i in range(3):
@@ -109,7 +105,8 @@ def GetLoserLayout():
     layout = UIVerticalLinearLayout(SCREEN_WIDTH,SCREEN_HEIGHT)
     headerlayout = UIHorizontalLinearLayout(SCREEN_WIDTH,50)
     headerlayout.addElement(UIButton(50, 50, "./assets/buttons/Square/Home/Default.png", "./assets/buttons/Square/Home/Hover.png", lambda: getGameManager().setGameState(GameState.MAIN_MENU)))
-    headerlayout.addElement(UILabel(800, 50, "Ultimate Tic Tac Toe!", "./assets/Fonts/ethnocentric.ttf", 36, 100))
+    headerlayout.addElement(UILabel(700, 50, "Ultimate Tic Tac Toe!", "./assets/Fonts/ethnocentric.ttf", 36, 100))
+    headerlayout.addElement(MuteButton(50,50))
     layout.addElement(headerlayout)
     mainLayout = UIVerticalLinearLayout(SCREEN_WIDTH, SCREEN_HEIGHT - 100)
     for i in range(3):
