@@ -41,7 +41,7 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
-        activeLayout.handleEvent(event, gameManager)
+        activeLayout.handleEvent(event)
 
     pygame.display.flip()
     clock.tick(60)

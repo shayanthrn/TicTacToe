@@ -1,6 +1,6 @@
 from UIFramework import *
-from gameManager import GameState, Difficulty
-from gameUIElements import UIBoard, DifficultyLabel, TurnLabel
+from gameManager import GameState, Difficulty, getGameManager
+from gameUIElements import UIBoard, DifficultyLabel, TurnLabel, MuteButton
 
 SCREEN_WIDTH, SCREEN_HEIGHT = 900, 900
 HEADER_TEXT_HEIGHT = 100
@@ -44,7 +44,7 @@ def GetWelComeAndRulesLayout():
     layout.addElement(Header2Line("Hard:"))
     layout.addElement(DescriptionLine("Powered by a neural network trained with a genetic algorithm."))
     layout.addElement(DescriptionLine("If you manage to win against this AI, feel free to reject my job application. I’ll understand."))
-    layout.addElement(UIButton(200, 75, "./assets/buttons/Rect/OkText/Default.png", "./assets/buttons/Rect/OkText/Hover.png",lambda gm: gm.setGameState(GameState.MAIN_MENU), SCREEN_WIDTH/2 - 100))
+    layout.addElement(UIButton(200, 75, "./assets/buttons/Rect/OkText/Default.png", "./assets/buttons/Rect/OkText/Hover.png",lambda: getGameManager().setGameState(GameState.MAIN_MENU), SCREEN_WIDTH/2 - 100))
     return layout
 
 def GetMainMenuLayout():
@@ -53,9 +53,9 @@ def GetMainMenuLayout():
     layout.addElement(UIImage(400,400,"./assets/images/board.png",SCREEN_WIDTH/2 - 200))
     layout.addElement(UILabel(DIFFICULTY_TEXT_WIDTH, DIFFICULTY_TEXT_HEIGHT, "Select The Difficulty", "./assets/Fonts/ethnocentric.ttf", 48,SCREEN_WIDTH/2 - DIFFICULTY_TEXT_WIDTH/2,50))
     hlayoutButtons = UIHorizontalLinearLayout(SCREEN_WIDTH,70)
-    hlayoutButtons.addElement(UIButton(200, 70, "./assets/buttons/Rect/PlayIcon/Default.png", "./assets/buttons/Rect/PlayIcon/Hover.png", lambda gm: gm.setDifficultyAndStart(Difficulty.EASY),  70,0))
-    hlayoutButtons.addElement(UIButton(200, 70, "./assets/buttons/Rect/PlayIcon/Default.png", "./assets/buttons/Rect/PlayIcon/Hover.png", lambda gm: gm.setDifficultyAndStart(Difficulty.MEDIUM), 70,0))
-    hlayoutButtons.addElement(UIButton(200, 70, "./assets/buttons/Rect/PlayIcon/Default.png", "./assets/buttons/Rect/PlayIcon/Hover.png", lambda gm: gm.setDifficultyAndStart(Difficulty.HARD), 70,0))
+    hlayoutButtons.addElement(UIButton(200, 70, "./assets/buttons/Rect/PlayIcon/Default.png", "./assets/buttons/Rect/PlayIcon/Hover.png", lambda: getGameManager().setDifficultyAndStart(Difficulty.EASY),  70,0))
+    hlayoutButtons.addElement(UIButton(200, 70, "./assets/buttons/Rect/PlayIcon/Default.png", "./assets/buttons/Rect/PlayIcon/Hover.png", lambda: getGameManager().setDifficultyAndStart(Difficulty.MEDIUM), 70,0))
+    hlayoutButtons.addElement(UIButton(200, 70, "./assets/buttons/Rect/PlayIcon/Default.png", "./assets/buttons/Rect/PlayIcon/Hover.png", lambda: getGameManager().setDifficultyAndStart(Difficulty.HARD), 70,0))
     layout.addElement(hlayoutButtons)
     hlayoutLabels = UIHorizontalLinearLayout(SCREEN_WIDTH,30)
     hlayoutLabels.addElement(UILabel(200, 30, "Easy", "./assets/Fonts/ethnocentric.ttf", 24, 70,30))
@@ -67,8 +67,9 @@ def GetMainMenuLayout():
 def GetInGameLayout():
     layout = UIVerticalLinearLayout(SCREEN_WIDTH,SCREEN_HEIGHT)
     headerlayout = UIHorizontalLinearLayout(SCREEN_WIDTH,50)
-    headerlayout.addElement(UIButton(50, 50, "./assets/buttons/Square/Home/Default.png", "./assets/buttons/Square/Home/Hover.png", lambda gm: gm.setGameState(GameState.MAIN_MENU)))
-    headerlayout.addElement(UILabel(800, 50, "Ultimate Tic Tac Toe!", "./assets/Fonts/ethnocentric.ttf", 36, 100))
+    headerlayout.addElement(UIButton(50, 50, "./assets/buttons/Square/Home/Default.png", "./assets/buttons/Square/Home/Hover.png", lambda: getGameManager().setGameState(GameState.MAIN_MENU)))
+    headerlayout.addElement(UILabel(700, 50, "Ultimate Tic Tac Toe!", "./assets/Fonts/ethnocentric.ttf", 36, 100))
+    headerlayout.addElement(MuteButton(50,50))
     layout.addElement(headerlayout)
     mainLayout = UIVerticalLinearLayout(SCREEN_WIDTH, SCREEN_HEIGHT - 100)
     for i in range(3):
@@ -87,7 +88,7 @@ def GetInGameLayout():
 def GetWinnerLayout():
     layout = UIVerticalLinearLayout(SCREEN_WIDTH,SCREEN_HEIGHT)
     headerlayout = UIHorizontalLinearLayout(SCREEN_WIDTH,50)
-    headerlayout.addElement(UIButton(50, 50, "./assets/buttons/Square/Home/Default.png", "./assets/buttons/Square/Home/Hover.png", lambda gm: gm.setGameState(GameState.MAIN_MENU)))
+    headerlayout.addElement(UIButton(50, 50, "./assets/buttons/Square/Home/Default.png", "./assets/buttons/Square/Home/Hover.png", lambda: getGameManager().setGameState(GameState.MAIN_MENU)))
     headerlayout.addElement(UILabel(800, 50, "Ultimate Tic Tac Toe!", "./assets/Fonts/ethnocentric.ttf", 36, 100))
     layout.addElement(headerlayout)
     mainLayout = UIVerticalLinearLayout(SCREEN_WIDTH, SCREEN_HEIGHT - 100)
@@ -107,7 +108,7 @@ def GetWinnerLayout():
 def GetLoserLayout():
     layout = UIVerticalLinearLayout(SCREEN_WIDTH,SCREEN_HEIGHT)
     headerlayout = UIHorizontalLinearLayout(SCREEN_WIDTH,50)
-    headerlayout.addElement(UIButton(50, 50, "./assets/buttons/Square/Home/Default.png", "./assets/buttons/Square/Home/Hover.png", lambda gm: gm.setGameState(GameState.MAIN_MENU)))
+    headerlayout.addElement(UIButton(50, 50, "./assets/buttons/Square/Home/Default.png", "./assets/buttons/Square/Home/Hover.png", lambda: getGameManager().setGameState(GameState.MAIN_MENU)))
     headerlayout.addElement(UILabel(800, 50, "Ultimate Tic Tac Toe!", "./assets/Fonts/ethnocentric.ttf", 36, 100))
     layout.addElement(headerlayout)
     mainLayout = UIVerticalLinearLayout(SCREEN_WIDTH, SCREEN_HEIGHT - 100)

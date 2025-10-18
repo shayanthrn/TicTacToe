@@ -30,6 +30,7 @@ class GameManager:
         pygame.mixer.music.load(self.bg_music_menu)
         pygame.mixer.music.set_volume(0.1)
         pygame.mixer.music.play(-1)
+        self.isMuted = False
 
     def initGame(self):
         self.ultimateBoard = []
@@ -86,6 +87,14 @@ class GameManager:
             return True
         return False
     
+    def toggleMute(self):
+        self.isMuted = not self.isMuted
+
+        if self.isMuted:
+            pygame.mixer.music.set_volume(0)
+        else:
+            pygame.mixer.music.set_volume(0.1)
+
     def terminateGame(self, winnerType):
         self.gameStarted = False
         self.activateMiniBoard = (-1,-1)

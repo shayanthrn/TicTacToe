@@ -19,7 +19,7 @@ class UIElement:
     def _draw(self,screen):
         pass
 
-    def handleEvent(self,event, gameManager):
+    def handleEvent(self,event):
         pass
 
 class UIImage(UIElement):
@@ -59,13 +59,13 @@ class UIButton(UIElement):
         else:
             screen.blit(self.image, (self.x, self.y))
     
-    def handleEvent(self,event, gameManager):
+    def handleEvent(self,event):
         mousePos = pygame.mouse.get_pos()
         rect = pygame.Rect(self.x, self.y, self.width, self.height)
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if rect.collidepoint(mousePos):
                 if self.onClick:
-                    self.onClick(gameManager)
+                    self.onClick()
 
 
 class UILayout(UIElement):
@@ -76,9 +76,9 @@ class UILayout(UIElement):
     def addElement(self,element):
         self.elements.append(element)
 
-    def handleEvent(self,event, gameManager):
+    def handleEvent(self,event):
         for element in self.elements:
-            element.handleEvent(event, gameManager)
+            element.handleEvent(event)
 
 
 class UIVerticalLinearLayout(UILayout):

@@ -12,7 +12,7 @@ class UIBoard(UIElement):
         for i in range(3):
             row = []
             for j in range(3):
-                button = UIButton(self.width // 3 -30, self.height // 3-30, "./assets/Images/empty.png", "./assets/Images/hover.png", lambda gm, i=i, j=j: gm.makeMove(i, j, PlayerType.HUMAN), 20, 20)
+                button = UIButton(self.width // 3 -30, self.height // 3-30, "./assets/Images/empty.png", "./assets/Images/hover.png", lambda i=i, j=j: getGameManager().makeMove(i, j, PlayerType.HUMAN), 20, 20)
                 row.append(button)
             self.buttons.append(row)
         self.index_i = index_i
@@ -37,14 +37,14 @@ class UIBoard(UIElement):
                 if board[i][j] == 2:
                     self.crossImage.draw(screen, self.x + j * cellWidth, self.y + i * cellHeight)
 
-    def handleEvent(self, event, gameManager):
+    def handleEvent(self, event):
         gm = getGameManager()
         isActive = (self.index_i,self.index_j) == gm.activateMiniBoard
         isUserTurn = gm.playerTurn == PlayerType.HUMAN
         if isActive and isUserTurn:
             for row in self.buttons:
                 for button in row:
-                    button.handleEvent(event, gameManager)
+                    button.handleEvent(event)
 
 
 class DifficultyLabel(UIElement):
@@ -77,3 +77,23 @@ class TurnLabel(UIElement):
             text = "AI's Turn"
         text_surface = self.font.render(text, True, (0, 0, 0))
         screen.blit(text_surface, (self.x, self.y))
+
+class MuteButton(UIElement):
+    def __init__(self,width, height, xOffset=0, yOffset=0, id=0):
+        super().__init__(width, height, xOffset, yOffset, id)
+        self.muteButton = UIButton(width, height, "./assets/buttons/Square/SoundOff/Default.png", "./assets/buttons/Square/SoundOff/Hover.png", lambda: getGameManager().toggleMute())
+        self.unmuteButton = UIButton(width, height, "./assets/buttons/Square/SoundOn/Default.png", "./assets/buttons/Square/SoundOn/Hover.png", lambda: getGameManager().toggleMute())
+
+    def _draw(self,screen):
+        gm = getGameManager()
+        if(gm.isMuted):
+            self.unmuteButton.draw(screen,self.x,self.y)
+        else:
+            self.muteButton.draw(screen,self.x,self.y)
+
+    def handleEvent(self, event):
+        gm = getGameManager()
+        if(gm.isMuted):
+            self.unmuteButton.handleEvent(event)
+        else:
+            self.muteButton.handleEvent(event)
