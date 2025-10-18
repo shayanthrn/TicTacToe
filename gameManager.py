@@ -1,7 +1,7 @@
 from enum import Enum
 import pygame
 
-from player import Player, EasyAIPlayer, MediumAIPlayer, HardAIPlayer
+from gamePlayer import Player, EasyAIPlayer, MediumAIPlayer, HardAIPlayer
 
 class GameState(Enum):
     WELCOME_AND_RULES = 0
@@ -33,7 +33,7 @@ class GameManager:
             self.ultimateBoard.append(row)
         self.activateMiniBoard = (1,1)
         self.players = []
-        self.players.append(Player())  # Human Player
+        self.players.append(Player())
         if self.difficulty == Difficulty.EASY:
             self.players.append(EasyAIPlayer())
         elif self.difficulty == Difficulty.MEDIUM:

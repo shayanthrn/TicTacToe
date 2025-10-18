@@ -1,6 +1,6 @@
 import pygame
 import sys
-from gameUI import SCREEN_HEIGHT, SCREEN_WIDTH, GetWelComeAndRulesLayout, GetMainMenuLayout, GetInGameLayout
+from gameLayout import SCREEN_HEIGHT, SCREEN_WIDTH, GetWelComeAndRulesLayout, GetMainMenuLayout, GetInGameLayout
 from gameManager import GameState, getGameManager
 from utils import printError
 
