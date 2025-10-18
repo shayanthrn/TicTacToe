@@ -54,37 +54,31 @@ class MediumAIPlayer(AIPlayer):
 class HardAIPlayer(AIPlayer):
     def __init__(self):
         super().__init__()
-        self.nn = NeuralNetwork([85,64,9])
+        self.nn = NeuralNetwork([85,20,9])
 
 
     def think(self, ultimateBoard, activateMiniBoard,selfMark): #selfMark 1 -> O 2 -> X
-        board_flat = []
+        boardFlat = []
         for mini_i in range(3):
             for mini_j in range(3):
                 for cell_i in range(3):
                     for cell_j in range(3):
                         val = ultimateBoard[mini_i][mini_j][cell_i][cell_j]
                         if val == 0:
-                            board_flat.append(0)
+                            boardFlat.append(0)
                         elif val == selfMark:
-                            board_flat.append(1)
+                            boardFlat.append(1)
                         else:
-                            board_flat.append(-1)
+                            boardFlat.append(-1)
 
         mini_i, mini_j = activateMiniBoard
-        one_hot = [0, 0, 0, 0]
-        if (mini_i, mini_j) == (0, 0):
-            one_hot[0] = 1
-        elif (mini_i, mini_j) == (0, 2):
-            one_hot[1] = 1
-        elif (mini_i, mini_j) == (2, 0):
-            one_hot[2] = 1
-        elif (mini_i, mini_j) == (2, 2):
-            one_hot[3] = 1
-        inputN = np.array(board_flat+one_hot).reshape(85,1)
+        pos_index = mini_i * 3 + mini_j
+        oneHot = [int(b) for b in format(pos_index, '04b')]
+        inputN = np.array(boardFlat+oneHot).reshape(85,1)
         result = self.nn.forward(inputN).flatten()
         moves = [(result[i*3 + j], (i,j)) for i in range(3) for j in range(3)]
         moves.sort(reverse=True)
         for prob, (i,j) in moves:
             if ultimateBoard[mini_i][mini_j][i][j] == 0:
                 return (i,j)
+        return (0,0)

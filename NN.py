@@ -17,8 +17,11 @@ class NeuralNetwork():
         self.biases2 = np.zeros((layer_sizes[2],1))
 
 
-    def activation(self, x):  #sigmoid as activation function
-        return 1 / (1 + np.exp(-x))
+    # def activation(self, x):  #sigmoid as activation function
+    #     return 1 / (1 + np.exp(-x))
+
+    def activation(self, x):
+        return np.maximum(0, x)
 
     def forward(self, input_neurons):  #feedforwarding
         hiddenlayer_neurons = self.activation(np.matmul(self.layer1_weights,input_neurons)+self.biases1)
