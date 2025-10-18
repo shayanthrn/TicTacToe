@@ -1,6 +1,6 @@
 import pygame
 import sys
-from gameLayout import SCREEN_HEIGHT, SCREEN_WIDTH, GetWelComeAndRulesLayout, GetMainMenuLayout, GetInGameLayout
+from gameLayout import *
 from gameManager import GameState, getGameManager
 from utils import printError
 
@@ -15,6 +15,8 @@ clock = pygame.time.Clock()
 welcomeLayout = GetWelComeAndRulesLayout()
 mainMenuLayout = GetMainMenuLayout()
 inGameLayout = GetInGameLayout()
+winnerLayout = GetWinnerLayout()
+loserLayout = GetLoserLayout()
 while True:
     screen.fill((255, 255, 254))
 
@@ -25,10 +27,15 @@ while True:
     elif gameManager.getGameState() == GameState.MAIN_MENU:
         activeLayout = mainMenuLayout
     elif gameManager.getGameState() == GameState.IN_GAME:
+        gameManager.tick()
         activeLayout = inGameLayout
+    elif gameManager.getGameState() == GameState.WINNER_HUMAN:
+        activeLayout = winnerLayout
+    elif gameManager.getGameState() == GameState.WINNER_AI:
+        activeLayout = loserLayout
     else:
         printError("Invalid game state")
-
+    
     activeLayout.draw(screen,0,0)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -36,7 +43,5 @@ while True:
             sys.exit()
         activeLayout.handleEvent(event, gameManager)
 
-    pygame.display.update()
-   
-
+    pygame.display.flip()
     clock.tick(60)

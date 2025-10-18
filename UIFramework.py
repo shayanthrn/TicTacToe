@@ -8,8 +8,8 @@ class UIElement:
         self.height = height
         self.xOffset = xOffset
         self.yOffset = yOffset
-        self.x = None # will be set during drawing
-        self.y = None # will be set during drawing
+        self.x = 0 # will be set during drawing
+        self.y = 0 # will be set during drawing
 
     def draw(self,screen,x,y):
         self.x = x + self.xOffset

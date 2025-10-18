@@ -34,8 +34,7 @@ def GetWelComeAndRulesLayout():
     layout.addElement(DescriptionLine("1. On your turn, you must place your mark on the active mini-board."))
     layout.addElement(DescriptionLine("2. Wherever the previous player placed their mark within a mini-board determines the next "))
     layout.addElement(DescriptionLine("mini-board the opponent must play in."))
-    layout.addElement(DescriptionLine("3. If the target mini-board is already full, the next player may choose any"))
-    layout.addElement(DescriptionLine("available mini-board."))
+    layout.addElement(DescriptionLine("3. If the target mini-board is already full, the next available mini-board will be chosen."))
     layout.addElement(DescriptionLine("4. Players alternate turns until one player wins a mini-board."))
     layout.addElement(Header2Line("Difficulties:"))
     layout.addElement(Header2Line("Easy:"))
@@ -82,5 +81,44 @@ def GetInGameLayout():
     footerLayout = UIHorizontalLinearLayout(SCREEN_WIDTH,50)
     footerLayout.addElement(DifficultyLabel(250, 50, "./assets/Fonts/ethnocentric.ttf", 24,10))
     footerLayout.addElement(TurnLabel(250, 50, "./assets/Fonts/ethnocentric.ttf", 24,400))
+    layout.addElement(footerLayout)
+    return layout
+
+def GetWinnerLayout():
+    layout = UIVerticalLinearLayout(SCREEN_WIDTH,SCREEN_HEIGHT)
+    headerlayout = UIHorizontalLinearLayout(SCREEN_WIDTH,50)
+    headerlayout.addElement(UIButton(50, 50, "./assets/buttons/Square/Home/Default.png", "./assets/buttons/Square/Home/Hover.png", lambda gm: gm.setGameState(GameState.MAIN_MENU)))
+    headerlayout.addElement(UILabel(800, 50, "Ultimate Tic Tac Toe!", "./assets/Fonts/ethnocentric.ttf", 36, 100))
+    layout.addElement(headerlayout)
+    mainLayout = UIVerticalLinearLayout(SCREEN_WIDTH, SCREEN_HEIGHT - 100)
+    for i in range(3):
+        row = UIHorizontalLinearLayout(SCREEN_WIDTH, (SCREEN_HEIGHT - 100)/3, 50)
+        for j in range(3):
+            miniBoard = UIBoard(200, 200, i,j, 50)
+            row.addElement(miniBoard)
+        mainLayout.addElement(row)
+    layout.addElement(mainLayout)
+    footerLayout = UIHorizontalLinearLayout(SCREEN_WIDTH,50)
+    footerLayout.addElement(UILabel(250, 50,"You Win! Congratulations!", "./assets/Fonts/ethnocentric.ttf", 24,200))
+    layout.addElement(footerLayout)
+    return layout
+
+
+def GetLoserLayout():
+    layout = UIVerticalLinearLayout(SCREEN_WIDTH,SCREEN_HEIGHT)
+    headerlayout = UIHorizontalLinearLayout(SCREEN_WIDTH,50)
+    headerlayout.addElement(UIButton(50, 50, "./assets/buttons/Square/Home/Default.png", "./assets/buttons/Square/Home/Hover.png", lambda gm: gm.setGameState(GameState.MAIN_MENU)))
+    headerlayout.addElement(UILabel(800, 50, "Ultimate Tic Tac Toe!", "./assets/Fonts/ethnocentric.ttf", 36, 100))
+    layout.addElement(headerlayout)
+    mainLayout = UIVerticalLinearLayout(SCREEN_WIDTH, SCREEN_HEIGHT - 100)
+    for i in range(3):
+        row = UIHorizontalLinearLayout(SCREEN_WIDTH, (SCREEN_HEIGHT - 100)/3, 50)
+        for j in range(3):
+            miniBoard = UIBoard(200, 200, i,j, 50)
+            row.addElement(miniBoard)
+        mainLayout.addElement(row)
+    layout.addElement(mainLayout)
+    footerLayout = UIHorizontalLinearLayout(SCREEN_WIDTH,50)
+    footerLayout.addElement(UILabel(250, 50,"You Lost! Better luck next time.", "./assets/Fonts/ethnocentric.ttf", 24,150))
     layout.addElement(footerLayout)
     return layout

@@ -1,5 +1,5 @@
 from UIFramework import *
-from gameManager import Difficulty, getGameManager
+from gameManager import Difficulty, PlayerType, getGameManager
 
 class UIBoard(UIElement):
     def __init__(self, width, height, index_i,index_j, xOffset=0, yOffset=0, id=0):
@@ -8,7 +8,13 @@ class UIBoard(UIElement):
         self.isActiveLabel = UILabel(self.width, 20, "Active", "./assets/Fonts/ethnocentric.ttf", 16)
         self.naughtImage = UIImage(self.width//3, self.height//3, "./assets/images/naught.png")
         self.crossImage = UIImage(self.width//3, self.height//3, "./assets/images/cross.png")
-        self.button = UIButton(self.width // 3 -30, self.height // 3-30, "./assets/Images/empty.png", "./assets/Images/hover.png", lambda : False, 20, 20)
+        self.buttons = []
+        for i in range(3):
+            row = []
+            for j in range(3):
+                button = UIButton(self.width // 3 -30, self.height // 3-30, "./assets/Images/empty.png", "./assets/Images/hover.png", lambda gm, i=i, j=j: gm.makeMove(i, j, PlayerType.HUMAN), 20, 20)
+                row.append(button)
+            self.buttons.append(row)
         self.index_i = index_i
         self.index_j = index_j
 
@@ -16,6 +22,7 @@ class UIBoard(UIElement):
         gm = getGameManager()
         self.boardImage.draw(screen, self.x, self.y)
         isActive = (self.index_i,self.index_j) == gm.activateMiniBoard
+        isUserTurn = gm.playerTurn == PlayerType.HUMAN
         if isActive:
             self.isActiveLabel.draw(screen, self.x + 50, self.y + self.height + 20)
         cellWidth = self.width // 3
@@ -23,12 +30,21 @@ class UIBoard(UIElement):
         board = gm.ultimateBoard[self.index_i][self.index_j]
         for i in range(3):
             for j in range(3):
-                if board[i][j] == 0 and isActive:
-                    self.button.draw(screen, self.x + j * cellWidth, self.y + i * cellHeight)
+                if board[i][j] == 0 and isActive and isUserTurn:
+                    self.buttons[i][j].draw(screen, self.x + j * cellWidth, self.y + i * cellHeight)
                 if board[i][j] == 1:
                     self.naughtImage.draw(screen, self.x + j * cellWidth, self.y + i * cellHeight)
                 if board[i][j] == 2:
                     self.crossImage.draw(screen, self.x + j * cellWidth, self.y + i * cellHeight)
+
+    def handleEvent(self, event, gameManager):
+        gm = getGameManager()
+        isActive = (self.index_i,self.index_j) == gm.activateMiniBoard
+        isUserTurn = gm.playerTurn == PlayerType.HUMAN
+        if isActive and isUserTurn:
+            for row in self.buttons:
+                for button in row:
+                    button.handleEvent(event, gameManager)
 
 
 class DifficultyLabel(UIElement):
@@ -55,7 +71,7 @@ class TurnLabel(UIElement):
 
     def _draw(self, screen):
         gm = getGameManager()
-        if gm.currentPlayer == 0:
+        if gm.playerTurn == PlayerType.HUMAN:
             text = "Your Turn"
         else:
             text = "AI's Turn"
