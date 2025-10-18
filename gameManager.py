@@ -73,8 +73,7 @@ class GameManager:
             pygame.mixer.music.load(self.bg_music_ingame)
             pygame.mixer.music.play(-1)
 
-    def checkMiniBoardWin(self, mini_i, mini_j):
-        board = self.ultimateBoard[mini_i][mini_j]
+    def checkMiniBoardWin(self, board):
         for i in range(3):
             if board[i][0] != 0 and board[i][0] == board[i][1] == board[i][2]:
                 return True
@@ -106,7 +105,7 @@ class GameManager:
             self.ultimateBoard[mini_i][mini_j][cell_i][cell_j] = 2
             self.setplayerTurn(PlayerType.HUMAN)
 
-        if(self.checkMiniBoardWin(mini_i, mini_j)):
+        if(self.checkMiniBoardWin(self.ultimateBoard[mini_i][mini_j])):
             self.terminateGame(playerType)
         else:
             if not self.isActiveBoardFull(cell_i, cell_j):
