@@ -1,11 +1,73 @@
 from UIFramework import *
-from gameManager import GameState, Difficulty
+from gameManager import GameState, Difficulty, getGameManager
 
 SCREEN_WIDTH, SCREEN_HEIGHT = 900, 900
 HEADER_TEXT_HEIGHT = 100
 HEADER_TEXT_WIDTH = 400
 DIFFICULTY_TEXT_WIDTH = 800
 DIFFICULTY_TEXT_HEIGHT = 100
+
+
+class UIBoard(UIElement):
+    def __init__(self, width, height, index_i,index_j, xOffset=0, yOffset=0, id=0):
+        super().__init__(width, height, xOffset, yOffset, id)
+        self.boardImage = UIImage(self.width, self.height, "./assets/images/board.png")
+        self.isActiveLabel = UILabel(self.width, 20, "Active", "./assets/Fonts/ethnocentric.ttf", 16)
+        self.naughtImage = UIImage(self.width//3, self.height//3, "./assets/images/naught.png")
+        self.crossImage = UIImage(self.width//3, self.height//3, "./assets/images/cross.png")
+        self.button = UIButton(self.width // 3 -30, self.height // 3-30, "./assets/Images/empty.png", "./assets/Images/hover.png", lambda : False, 20, 20)
+        self.index_i = index_i
+        self.index_j = index_j
+
+    def _draw(self, screen):
+        gm = getGameManager()
+        self.boardImage.draw(screen, self.x, self.y)
+        isActive = (self.index_i,self.index_j) == gm.activateMiniBoard
+        if isActive:
+            self.isActiveLabel.draw(screen, self.x + 50, self.y + self.height + 20)
+        cellWidth = self.width // 3
+        cellHeight = self.height // 3
+        board = gm.ultimateBoard[self.index_i][self.index_j]
+        for i in range(3):
+            for j in range(3):
+                if board[i][j] == 0 and isActive:
+                    self.button.draw(screen, self.x + j * cellWidth, self.y + i * cellHeight)
+                if board[i][j] == 1:
+                    self.naughtImage.draw(screen, self.x + j * cellWidth, self.y + i * cellHeight)
+                if board[i][j] == 2:
+                    self.crossImage.draw(screen, self.x + j * cellWidth, self.y + i * cellHeight)
+
+
+class DifficultyLabel(UIElement):
+    def __init__(self,width, height, fontType = None, fontSize=32, xOffset=0, yOffset=0, id=0):
+        super().__init__(width, height, xOffset, yOffset, id)
+        self.font = pygame.font.Font(fontType, fontSize)
+
+    def _draw(self, screen):
+        gm = getGameManager()
+        text = ""
+        if gm.difficulty == Difficulty.EASY:
+            text = "Difficulty: Easy"
+        elif gm.difficulty == Difficulty.MEDIUM:
+            text = "Difficulty: Medium"
+        elif gm.difficulty == Difficulty.HARD:
+            text = "Difficulty: Hard"
+        text_surface = self.font.render(text, True, (0, 0, 0))
+        screen.blit(text_surface, (self.x, self.y))
+
+class TurnLabel(UIElement):
+    def __init__(self,width, height, fontType = None, fontSize=32, xOffset=0, yOffset=0, id=0):
+        super().__init__(width, height, xOffset, yOffset, id)
+        self.font = pygame.font.Font(fontType, fontSize)
+
+    def _draw(self, screen):
+        gm = getGameManager()
+        if gm.currentPlayer == 0:
+            text = "Your Turn"
+        else:
+            text = "AI's Turn"
+        text_surface = self.font.render(text, True, (0, 0, 0))
+        screen.blit(text_surface, (self.x, self.y))
 
 def DescriptionLine(text, fontType = "./assets/Fonts/ethnocentric.ttf", fontSize=12):
     return UILabel(SCREEN_WIDTH, 20, text, fontType, fontSize,10)
@@ -64,6 +126,21 @@ def GetMainMenuLayout():
     return layout
 
 def GetInGameLayout():
-    layout = UIVerticalLinearLayout(300,300)
-    layout.addElement(UIButton(50, 50, "./assets/buttons/Square/Home/Default.png", "./assets/buttons/Square/Home/Hover.png", lambda gm: gm.setGameState(GameState.MAIN_MENU)))
+    layout = UIVerticalLinearLayout(SCREEN_WIDTH,SCREEN_HEIGHT)
+    headerlayout = UIHorizontalLinearLayout(SCREEN_WIDTH,50)
+    headerlayout.addElement(UIButton(50, 50, "./assets/buttons/Square/Home/Default.png", "./assets/buttons/Square/Home/Hover.png", lambda gm: gm.setGameState(GameState.MAIN_MENU)))
+    headerlayout.addElement(UILabel(800, 50, "Ultimate Tic Tac Toe!", "./assets/Fonts/ethnocentric.ttf", 36, 100))
+    layout.addElement(headerlayout)
+    mainLayout = UIVerticalLinearLayout(SCREEN_WIDTH, SCREEN_HEIGHT - 100)
+    for i in range(3):
+        row = UIHorizontalLinearLayout(SCREEN_WIDTH, (SCREEN_HEIGHT - 100)/3, 50)
+        for j in range(3):
+            miniBoard = UIBoard(200, 200, i,j, 50)
+            row.addElement(miniBoard)
+        mainLayout.addElement(row)
+    layout.addElement(mainLayout)
+    footerLayout = UIHorizontalLinearLayout(SCREEN_WIDTH,50)
+    footerLayout.addElement(DifficultyLabel(250, 50, "./assets/Fonts/ethnocentric.ttf", 24,10))
+    footerLayout.addElement(TurnLabel(250, 50, "./assets/Fonts/ethnocentric.ttf", 24,400))
+    layout.addElement(footerLayout)
     return layout

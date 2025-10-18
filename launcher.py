@@ -1,24 +1,20 @@
 import pygame
 import sys
 from gameUI import SCREEN_HEIGHT, SCREEN_WIDTH, GetWelComeAndRulesLayout, GetMainMenuLayout, GetInGameLayout
-from gameManager import GameManager, GameState
+from gameManager import GameState, getGameManager
 from utils import printError
 
 pygame.init()
-pygame.mixer.init()
-
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Tic Tac Toe")
 
-gameManager = GameManager()
+gameManager = getGameManager()
 
 clock = pygame.time.Clock()
-
 welcomeLayout = GetWelComeAndRulesLayout()
 mainMenuLayout = GetMainMenuLayout()
 inGameLayout = GetInGameLayout()
-
 while True:
     screen.fill((255, 255, 254))
 
@@ -39,6 +35,8 @@ while True:
             pygame.quit()
             sys.exit()
         activeLayout.handleEvent(event, gameManager)
-    pygame.display.flip()
+
+    pygame.display.update()
+   
 
     clock.tick(60)
