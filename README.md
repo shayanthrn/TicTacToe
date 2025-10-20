@@ -37,8 +37,7 @@ But there's a twist — **each move determines where your opponent must play nex
 - No strategy involved — perfect for beginners.
 
 ### 🟡 Medium  
-- Implements **basic strategic logic**:
-  - Blocks opponent’s winning moves.  
+- Implements **basic strategic logic**:  
   - Takes winning moves when available.
 
 ### 🔴 Hard  
