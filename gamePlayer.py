@@ -1,7 +1,5 @@
 
 from random import choice
-from nn import NeuralNetwork
-import numpy as np
 
 class AIPlayer:
     def __init__(self,mark):
@@ -59,7 +57,6 @@ class MediumAIPlayer(EasyAIPlayer):
 class HardAIPlayer(MediumAIPlayer):
     def __init__(self,mark):
         super().__init__(mark)
-        self.nn = NeuralNetwork()
 
     def think(self, ultimateBoard, activateMiniBoard):
         mini_i, mini_j = activateMiniBoard
