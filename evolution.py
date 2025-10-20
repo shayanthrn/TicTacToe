@@ -3,21 +3,26 @@ import copy
 import random
 import numpy as np
 import pickle
+import time
 
 firstPopulationSize = 100
 generations = 1000
 survivalRate = 0.1
 Population = [ HardAIPlayer() for _ in range(firstPopulationSize)]
 
-def gameSimulator(playerA,playerB):
-    from gameManager import GameManager
-    gm = GameManager(enableMusic=False)
+def gameSimulator(player_O,player_X):
+    from gameManager import GameManager, PlayerMark
+    gm = GameManager(isSimulation=True)
     gm.initGame()
-    gm.initGameAIvsAI()
-    players = [playerA,playerB]
+    players = {
+        PlayerMark.O : player_O,
+        PlayerMark.X : player_X
+    }
     while True:
-        cell_i,cell_j = players[gm.playerTurn - 1].think(gm.ultimateBoard,gm.activateMiniBoard,gm.playerTurn)
-        result = gm.makeMoveAIvsAI(cell_i,cell_j,gm.playerTurn)
+        cell_i,cell_j = players[gm.markToPlayNow].think(gm.ultimateBoard,gm.activateMiniBoard)
+        result = gm.makeMove(cell_i,cell_j)
+        print(gm.ultimateBoard)
+        time.sleep(5)
         if(type(result) == dict):
             return gm.playerTurn
         
@@ -94,14 +99,6 @@ def evolvePopulation(population, scores):
 
 bestPlayer = None
 
-# enemy = MediumAIPlayer()
-# for generation in range(generations):
-#     mutationRate = 0.3 if generation < generations * 0.3 else 0.1
-#     populationScore = [0 for _ in range(len(Population))]
-#     for i in range(len(Population)):
-#         result = gameSimulator(Population[i],enemy)
-#         if result == 1:
-#             populationScore[i]+=1
 enemy = MediumAIPlayer()
 for generation in range(generations):
     mutationRate = 0.3 if generation < generations * 0.3 else 0.1

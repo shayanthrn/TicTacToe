@@ -1,11 +1,14 @@
 from enum import Enum
 import pygame
-
+from utils import printError
 from gamePlayer import EasyAIPlayer, MediumAIPlayer, HardAIPlayer
 
-class PlayerType(Enum):
-    HUMAN = 0
-    AI = 1
+class PlayerMark(Enum):
+    O = 1
+    X = 2
+
+    def opposite(self):
+        return PlayerMark.O if self == PlayerMark.X else PlayerMark.X
 
 class GameState(Enum):
     WELCOME_AND_RULES = 0
@@ -20,13 +23,14 @@ class Difficulty(Enum):
     HARD = 2
 
 class GameManager:
-    def __init__(self, enableMusic=True):
+    def __init__(self, isSimulation = False):
         self.difficulty = None
         self.gameState = GameState.WELCOME_AND_RULES
         self.bg_music_menu = "./assets/Musics/bg_menu.mp3"
         self.bg_music_ingame = "./assets/Musics/bg_ingame.mp3"
         self.gameStarted = False
-        if enableMusic:
+        self.isSimulation = isSimulation
+        if not isSimulation:
             pygame.mixer.init()
             pygame.mixer.music.load(self.bg_music_menu)
             pygame.mixer.music.set_volume(0.1)
@@ -43,22 +47,16 @@ class GameManager:
         self.activateMiniBoard = (1,1)
         self.AI = None
         if self.difficulty == Difficulty.EASY:
-            self.AI = EasyAIPlayer()
+            self.AI = EasyAIPlayer(PlayerMark.X)
         elif self.difficulty == Difficulty.MEDIUM:
-            self.AI = MediumAIPlayer()
+            self.AI = MediumAIPlayer(PlayerMark.X)
         elif self.difficulty == Difficulty.HARD:
-            self.AI = HardAIPlayer()
-        self.playerTurn = PlayerType.HUMAN
+            self.AI = HardAIPlayer(PlayerMark.X)
+        self.markToPlayNow = PlayerMark.O
         self.gameStarted = True
-
-    def initGameAIvsAI(self):
-        self.playerTurn = 1
 
     def getGameState(self):
         return self.gameState
-    
-    def setplayerTurn(self, playerType):
-        self.playerTurn = playerType
     
     def setGameState(self, state):
         self.gameState = state
@@ -81,15 +79,15 @@ class GameManager:
     def checkMiniBoardWin(self, board):
         for i in range(3):
             if board[i][0] != 0 and board[i][0] == board[i][1] == board[i][2]:
-                return True
+                return board[i][0]
         for j in range(3):
             if board[0][j] != 0 and board[0][j] == board[1][j] == board[2][j]:
-                return True
+                return board[0][j]
         if board[0][0] != 0 and board[0][0] == board[1][1] == board[2][2]:
-            return True
+            return board[0][0]
         if board[0][2] != 0 and board[0][2] == board[1][1] == board[2][0]:
-            return True
-        return False
+            return board[0][2]
+        return 0
     
     def toggleMute(self):
         self.isMuted = not self.isMuted
@@ -102,50 +100,28 @@ class GameManager:
     def terminateGame(self, winnerType):
         self.gameStarted = False
         self.activateMiniBoard = (-1,-1)
-        if winnerType == PlayerType.HUMAN:
+        if self.isSimulation:
+            return winnerType
+        if winnerType == PlayerMark.O:
             self.setGameState(GameState.WINNER_HUMAN)
         else:
             self.setGameState(GameState.WINNER_AI)
 
-    def makeMove(self, cell_i, cell_j, playerType):
+    def makeMove(self, cell_i, cell_j):
         mini_i, mini_j = self.activateMiniBoard
         if self.ultimateBoard[mini_i][mini_j][cell_i][cell_j] != 0:
-            return False
-        if playerType == PlayerType.HUMAN:
-            self.ultimateBoard[mini_i][mini_j][cell_i][cell_j] = 1
-            self.setplayerTurn(PlayerType.AI)
-        else:
-            self.ultimateBoard[mini_i][mini_j][cell_i][cell_j] = 2
-            self.setplayerTurn(PlayerType.HUMAN)
-
-        if(self.checkMiniBoardWin(self.ultimateBoard[mini_i][mini_j])):
-            self.terminateGame(playerType)
+            printError("Request to make move for invalid position")
+        self.ultimateBoard[mini_i][mini_j][cell_i][cell_j] = self.markToPlayNow
+        winner = self.checkMiniBoardWin(self.ultimateBoard[mini_i][mini_j])
+        if(winner):
+            return self.terminateGame(winner)
         else:
             if not self.isActiveBoardFull(cell_i, cell_j):
                 self.activateMiniBoard = (cell_i, cell_j)
             else:
                 self.activateMiniBoard = self.findNextActiveBoard()
-        return True
-    
-    def makeMoveAIvsAI(self, cell_i, cell_j, playerTurn):
-        mini_i, mini_j = self.activateMiniBoard
-        if self.ultimateBoard[mini_i][mini_j][cell_i][cell_j] != 0:
-            return False
-        self.ultimateBoard[mini_i][mini_j][cell_i][cell_j] = playerTurn
-
-        if(self.checkMiniBoardWin(self.ultimateBoard[mini_i][mini_j])):
-            return {'winner' : playerTurn}
-        else:
-            if not self.isActiveBoardFull(cell_i, cell_j):
-                self.activateMiniBoard = (cell_i, cell_j)
-            else:
-                self.activateMiniBoard = self.findNextActiveBoard()
-
-        if playerTurn == 1:
-            self.playerTurn = 2
-        else:
-            self.playerTurn = 1
-        return True
+        self.markToPlayNow = self.markToPlayNow.opposite()
+        return 0
     
     def isActiveBoardFull(self, mini_i, mini_j):
         board = self.ultimateBoard[mini_i][mini_j]
@@ -163,9 +139,9 @@ class GameManager:
         return (-1,-1)
     
     def tick(self):
-        if self.gameState == GameState.IN_GAME and self.gameStarted and self.playerTurn == PlayerType.AI:
-            move = self.AI.think(self.ultimateBoard, self.activateMiniBoard,2)
-            self.makeMove(*move, PlayerType.AI)
+        if self.gameState == GameState.IN_GAME and self.gameStarted and self.markToPlayNow == PlayerMark.X:
+            move = self.AI.think(self.ultimateBoard, self.activateMiniBoard)
+            self.makeMove(*move)
 
 
 _game_manager_instance = GameManager()

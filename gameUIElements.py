@@ -1,5 +1,5 @@
 from UIFramework import *
-from gameManager import Difficulty, PlayerType, getGameManager
+from gameManager import Difficulty, getGameManager, PlayerMark
 
 class UIBoard(UIElement):
     def __init__(self, width, height, index_i,index_j, xOffset=0, yOffset=0, id=0):
@@ -12,7 +12,7 @@ class UIBoard(UIElement):
         for i in range(3):
             row = []
             for j in range(3):
-                button = UIButton(self.width // 3 -30, self.height // 3-30, "./assets/Images/empty.png", "./assets/Images/hover.png", lambda i=i, j=j: getGameManager().makeMove(i, j, PlayerType.HUMAN), 20, 20)
+                button = UIButton(self.width // 3 -30, self.height // 3-30, "./assets/Images/empty.png", "./assets/Images/hover.png", lambda i=i, j=j: getGameManager().makeMove(i, j), 20, 20)
                 row.append(button)
             self.buttons.append(row)
         self.index_i = index_i
@@ -22,7 +22,7 @@ class UIBoard(UIElement):
         gm = getGameManager()
         self.boardImage.draw(screen, self.x, self.y)
         isActive = (self.index_i,self.index_j) == gm.activateMiniBoard
-        isUserTurn = gm.playerTurn == PlayerType.HUMAN
+        isUserTurn = gm.markToPlayNow == PlayerMark.O
         if isActive:
             self.isActiveLabel.draw(screen, self.x + 50, self.y + self.height + 20)
         cellWidth = self.width // 3
@@ -32,15 +32,15 @@ class UIBoard(UIElement):
             for j in range(3):
                 if board[i][j] == 0 and isActive and isUserTurn:
                     self.buttons[i][j].draw(screen, self.x + j * cellWidth, self.y + i * cellHeight)
-                if board[i][j] == 1:
+                if board[i][j] == PlayerMark.O:
                     self.naughtImage.draw(screen, self.x + j * cellWidth, self.y + i * cellHeight)
-                if board[i][j] == 2:
+                if board[i][j] == PlayerMark.X:
                     self.crossImage.draw(screen, self.x + j * cellWidth, self.y + i * cellHeight)
 
     def handleEvent(self, event):
         gm = getGameManager()
         isActive = (self.index_i,self.index_j) == gm.activateMiniBoard
-        isUserTurn = gm.playerTurn == PlayerType.HUMAN
+        isUserTurn = gm.markToPlayNow == PlayerMark.O
         if isActive and isUserTurn:
             for row in self.buttons:
                 for button in row:
@@ -71,7 +71,7 @@ class TurnLabel(UIElement):
 
     def _draw(self, screen):
         gm = getGameManager()
-        if gm.playerTurn == PlayerType.HUMAN:
+        if gm.markToPlayNow == PlayerMark.O:
             text = "Your Turn"
         else:
             text = "AI's Turn"
