@@ -1,6 +1,6 @@
 
 from random import choice
-from NN import NeuralNetwork
+from nn import NeuralNetwork
 import numpy as np
 
 class AIPlayer:
@@ -15,72 +15,85 @@ class EasyAIPlayer(AIPlayer):
 
     def think(self, ultimateBoard, activateMiniBoard):
         mini_i, mini_j = activateMiniBoard
-        choices = []
-        for i in range(3):
-            for j in range(3):
-                if ultimateBoard[mini_i][mini_j][i][j] == 0:
-                    choices.append((i, j))
+        choices = self.findAvailableOptions(ultimateBoard[mini_i][mini_j])
         if choices:
             return choice(choices)
         return None
+    
+    def findAvailableOptions(self, board):
+        choices = []
+        for i in range(3):
+            for j in range(3):
+                if  board[i][j]== 0:
+                    choices.append((i, j))
+        return choices
 
-class MediumAIPlayer(AIPlayer):
+
+class MediumAIPlayer(EasyAIPlayer):
     def __init__(self,mark):
         super().__init__(mark)
 
     def think(self, ultimateBoard, activateMiniBoard):
         mini_i, mini_j = activateMiniBoard
         board = ultimateBoard[mini_i][mini_j]
-        choices = []
-        for i in range(3):
-            for j in range(3):
-                if board[i][j] == 0:
-                    choices.append((i, j))
-                    board[i][j] = self.mark.opposite()
-                    from gameManager import getGameManager
-                    if getGameManager().checkMiniBoardWin(board):
-                        board[i][j] = 0
-                        return (i, j)
-                    board[i][j] = self.mark
-                    if getGameManager().checkMiniBoardWin(board):
-                        board[i][j] = 0
-                        return (i, j)
-                    board[i][j] = 0          
-        if choices:
+        choices = self.findAvailableOptions(board)
+        winPositions = self.findWinPositions(board,choices)
+        if winPositions:
+            return choice(winPositions)
+        elif choices:
             return choice(choices)
         return None
 
+    def findWinPositions(self, board, choices):
+        winPositions = []
+        for i, j in choices:
+            board[i][j] = self.mark
+            from gameManager import getGameManager
+            if getGameManager().checkMiniBoardWin(board):
+                board[i][j] = 0
+                winPositions.append((i, j)) 
+            board[i][j] = 0 
+        return winPositions
 
     
-class HardAIPlayer(AIPlayer):
+class HardAIPlayer(MediumAIPlayer):
     def __init__(self,mark):
         super().__init__(mark)
         self.nn = NeuralNetwork()
 
     def think(self, ultimateBoard, activateMiniBoard):
-        boardFlat = []
-        for mini_i in range(3):
-            for mini_j in range(3):
-                for cell_i in range(3):
-                    for cell_j in range(3):
-                        val = ultimateBoard[mini_i][mini_j][cell_i][cell_j]
-                        if val == 0:
-                            boardFlat.append(0)
-                        elif val == self.mark:
-                            boardFlat.append(1)
-                        else:
-                            boardFlat.append(-1)
-
         mini_i, mini_j = activateMiniBoard
-        pos_index = mini_i * 3 + mini_j
-        oneHot = [int(b) for b in format(pos_index, '04b')]
-        inputN = np.array(boardFlat+oneHot)
-        inputN = np.expand_dims(inputN, axis=0)
-        result = self.nn.forward(inputN)
-        return (0,0)
-        moves = [(result[i*3 + j], (i,j)) for i in range(3) for j in range(3)]
-        moves.sort(reverse=True)
-        for prob, (i,j) in moves:
-            if ultimateBoard[mini_i][mini_j][i][j] == 0:
-                return (i,j)
-        return (0,0)
+        board = ultimateBoard[mini_i][mini_j]
+        choices = self.findAvailableOptions(board)
+        winPositions = self.findWinPositions(board,choices)
+        if winPositions:
+            return choice(winPositions)
+        else:
+            safePositions = self.findSafePositions(ultimateBoard,choices)
+            if safePositions:
+                return choice(safePositions)
+            elif choices:
+                return choice(choices)
+            return None
+
+    def findSafePositions (self,ultimateBoard,choices):
+        safePositions = []
+        for i,j in choices:
+            risky = False
+            nextBoard = ultimateBoard[i][j]
+            oppChoices = self.findAvailableOptions(nextBoard)
+            for oi, oj in oppChoices:
+                nextBoard[oi][oj] = self.mark.opposite()
+                from gameManager import getGameManager
+                if getGameManager().checkMiniBoardWin(nextBoard):
+                    risky = True
+                nextBoard[oi][oj] = 0
+                if risky:
+                    break
+            if not risky:
+                safePositions.append((i,j))
+
+        return safePositions
+
+
+
