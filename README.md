@@ -63,5 +63,5 @@ But there's a twist — **each move determines where your opponent must play nex
 - Pygame installed  
 
 ### How to Run
-  pip install -r requirements.txt
-  python launcher.py
+- pip install -r requirements.txt
+- python launcher.py or python3 launcher.py
